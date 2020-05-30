@@ -76,39 +76,37 @@ class _EmojiKeyboardState extends State<EmojiKeyboard> {
                 bottom: BorderSide(),
               ),
             ),
-            child: Expanded(
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  ToggleButtons(
-                    children: _allEmojis
-                        .map(
-                          (e) => Text(
-                            e.first.emoji,
-                            style: TextStyle(
-                              fontFamily: widget.emojiFont,
-                            ),
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                ToggleButtons(
+                  children: _allEmojis
+                      .map(
+                        (e) => Text(
+                          e.first.emoji,
+                          style: TextStyle(
+                            fontFamily: widget.emojiFont,
                           ),
-                        )
-                        .toList(),
-                    renderBorder: false,
-                    onPressed: (int index) {
-                      setState(
-                        () {
-                          for (int i = 0; i < _isTabSelected.length; i++) {
-                            if (i == index) {
-                              _isTabSelected[i] = true;
-                            } else if (_isTabSelected[i]) {
-                              _isTabSelected[i] = false;
-                            }
+                        ),
+                      )
+                      .toList(),
+                  renderBorder: false,
+                  onPressed: (int index) {
+                    setState(
+                      () {
+                        for (int i = 0; i < _isTabSelected.length; i++) {
+                          if (i == index) {
+                            _isTabSelected[i] = true;
+                          } else if (_isTabSelected[i]) {
+                            _isTabSelected[i] = false;
                           }
-                        },
-                      );
-                    },
-                    isSelected: _isTabSelected,
-                  ),
-                ],
-              ),
+                        }
+                      },
+                    );
+                  },
+                  isSelected: _isTabSelected,
+                ),
+              ],
             ),
           ),
           Expanded(
