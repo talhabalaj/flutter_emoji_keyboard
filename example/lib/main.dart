@@ -33,17 +33,20 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _controller;
   bool _isEmojiOpen;
+  FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
     _isEmojiOpen = false;
+    _focusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -61,6 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 Expanded(
                   child: TextField(
+                    focusNode: _focusNode,
                     controller: _controller,
                     onTap: () {
                       if (_isEmojiOpen) {
@@ -72,14 +76,19 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.open_in_new),
+                  icon: Icon(
+                    _isEmojiOpen ? Icons.keyboard : Icons.insert_emoticon,
+                  ),
                   onPressed: () {
-                    if (!_isEmojiOpen)
-                      SystemChannels.textInput.invokeMethod('TextInput.hide');
-                    else
-                      SystemChannels.textInput.invokeMethod('TextInput.show');
                     this.setState(() {
                       _isEmojiOpen = !_isEmojiOpen;
+                      if (_isEmojiOpen) {
+                        if (!_focusNode.hasFocus) {
+                          _focusNode.requestFocus();
+                        }
+                        SystemChannels.textInput.invokeMethod('TextInput.hide');
+                      } else
+                        SystemChannels.textInput.invokeMethod('TextInput.show');
                     });
                   },
                 )

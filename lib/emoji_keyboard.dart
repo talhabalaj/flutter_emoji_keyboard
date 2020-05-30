@@ -5,17 +5,20 @@ import 'package:emoji_keyboard/emojis/emoji_model.dart';
 import 'package:flutter/material.dart';
 
 class EmojiKeyboard extends StatefulWidget {
-  EmojiKeyboard(
-      {Key key, this.emojiFont, this.onEmojiPressed, this.height = 250})
-      : super(key: key);
+  EmojiKeyboard({
+    Key key,
+    this.emojiFont,
+    this.onEmojiPressed,
+    this.height = 250,
+  }) : super(key: key);
 
-  /// The font for emoji keyboard to use, if not supplied default emoijs are used
+  /// The font for emoji keyboard to use, if not supplied default emojis are used
   final String emojiFont;
 
   /// The callback which is called when emoji is pressed
   final Function(Emoji) onEmojiPressed;
 
-  /// Height of the keyboard
+  /// Height of the keyboard (default is 250)
   final double height;
 
   @override
@@ -23,27 +26,18 @@ class EmojiKeyboard extends StatefulWidget {
 }
 
 class _EmojiKeyboardState extends State<EmojiKeyboard> {
-  PageController _pageController;
   List<bool> _isTabSelected;
   List<List<Emoji>> _allEmojis;
 
-  List<bool> _getTabSelected({int page}) {
+  List<bool> _getInitialTabSelection() {
     return _allEmojis.asMap().entries.map((entry) {
-      if (page != null)
-        return page == entry.key;
-      else {
-        if (_pageController.hasClients)
-          return _pageController.page == entry.key;
-        else
-          return _pageController.initialPage == entry.key;
-      }
+      return entry.key == 0;
     }).toList();
   }
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
     _allEmojis = [
       Emoji.emojiListFromJson(smileysAndPeople),
       Emoji.emojiListFromJson(animalsAndNature),
@@ -54,45 +48,57 @@ class _EmojiKeyboardState extends State<EmojiKeyboard> {
       Emoji.emojiListFromJson(flags),
       Emoji.emojiListFromJson(objects),
     ];
-    _isTabSelected = _getTabSelected();
+    _isTabSelected = _getInitialTabSelection();
   }
 
   @override
   Widget build(BuildContext context) {
+    final emojiGrids = _allEmojis
+        .map(
+          (e) => EmojiGrid(
+            emojis: e,
+            emojiFont: widget.emojiFont,
+            onEmojiTap: widget.onEmojiPressed,
+          ),
+        )
+        .toList();
     return Container(
       height: widget.height,
       color: Colors.grey[100],
       width: double.infinity,
       child: Column(
         children: <Widget>[
-          StatefulBuilder(builder: (context, setToggleButtonState) {
-            return Container(
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: BorderDirectional(
-                  bottom: BorderSide(),
-                ),
+          Container(
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: BorderDirectional(
+                bottom: BorderSide(),
               ),
+            ),
+            child: Expanded(
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
                   ToggleButtons(
-                    children:
-                        _allEmojis.map((e) => Text(e.first.emoji)).toList(),
+                    children: _allEmojis
+                        .map(
+                          (e) => Text(
+                            e.first.emoji,
+                            style: TextStyle(
+                              fontFamily: widget.emojiFont,
+                            ),
+                          ),
+                        )
+                        .toList(),
                     renderBorder: false,
                     onPressed: (int index) {
-                      setToggleButtonState(
+                      setState(
                         () {
                           for (int i = 0; i < _isTabSelected.length; i++) {
                             if (i == index) {
                               _isTabSelected[i] = true;
-                              _pageController.animateToPage(
-                                i,
-                                duration: Duration(milliseconds: 500),
-                                curve: Curves.ease,
-                              );
-                            } else {
+                            } else if (_isTabSelected[i]) {
                               _isTabSelected[i] = false;
                             }
                           }
@@ -103,25 +109,13 @@ class _EmojiKeyboardState extends State<EmojiKeyboard> {
                   ),
                 ],
               ),
-            );
-          }),
+            ),
+          ),
           Expanded(
-            child: PageView(
-              controller: _pageController,
-              onPageChanged: (page) {
-                this.setState(() {
-                  _isTabSelected = _getTabSelected(page: page);
-                });
-              },
-              children: _allEmojis
-                  .map(
-                    (e) => EmojiGrid(
-                      emojis: e,
-                      emojiFont: widget.emojiFont,
-                      onEmojiTap: widget.onEmojiPressed,
-                    ),
-                  )
-                  .toList(),
+            child: AnimatedSwitcher(
+              duration: Duration(milliseconds: 250),
+              child:
+                  emojiGrids[_isTabSelected.indexWhere((element) => element)],
             ),
           ),
         ],
