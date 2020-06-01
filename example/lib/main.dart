@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:emoji_keyboard/emoji_keyboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -85,6 +87,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       if (_isEmojiOpen) {
                         if (!_focusNode.hasFocus) {
                           _focusNode.requestFocus();
+                          Timer(Duration(milliseconds: 1), () {
+                            SystemChannels.textInput
+                                .invokeMethod('TextInput.hide');
+                          });
                         }
                         SystemChannels.textInput.invokeMethod('TextInput.hide');
                       } else

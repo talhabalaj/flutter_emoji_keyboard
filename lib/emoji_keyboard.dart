@@ -64,18 +64,13 @@ class _EmojiKeyboardState extends State<EmojiKeyboard> {
         .toList();
     return Container(
       height: widget.height,
-      color: Colors.grey[100],
+      color: Colors.white,
       width: double.infinity,
       child: Column(
         children: <Widget>[
           Container(
             height: 50,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: BorderDirectional(
-                bottom: BorderSide(),
-              ),
-            ),
+            color: Colors.grey[100],
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
@@ -92,15 +87,17 @@ class _EmojiKeyboardState extends State<EmojiKeyboard> {
                       .toList(),
                   renderBorder: false,
                   onPressed: (int index) {
+                    final _isTabSelectedCopy = [..._isTabSelected];
+                    for (int i = 0; i < _isTabSelectedCopy.length; i++) {
+                      if (i == index) {
+                        _isTabSelectedCopy[i] = true;
+                      } else if (_isTabSelectedCopy[i]) {
+                        _isTabSelectedCopy[i] = false;
+                      }
+                    }
                     setState(
                       () {
-                        for (int i = 0; i < _isTabSelected.length; i++) {
-                          if (i == index) {
-                            _isTabSelected[i] = true;
-                          } else if (_isTabSelected[i]) {
-                            _isTabSelected[i] = false;
-                          }
-                        }
+                        _isTabSelected = _isTabSelectedCopy;
                       },
                     );
                   },
@@ -110,11 +107,7 @@ class _EmojiKeyboardState extends State<EmojiKeyboard> {
             ),
           ),
           Expanded(
-            child: AnimatedSwitcher(
-              duration: Duration(milliseconds: 250),
-              child:
-                  emojiGrids[_isTabSelected.indexWhere((element) => element)],
-            ),
+            child: emojiGrids[_isTabSelected.indexWhere((element) => element)],
           ),
         ],
       ),
@@ -138,8 +131,12 @@ class EmojiGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.builder(
       itemCount: emojis.length,
+      physics: BouncingScrollPhysics(),
+      shrinkWrap: true,
+      addAutomaticKeepAlives: true,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 7,
+        crossAxisCount: 5,
+        childAspectRatio: 1,
       ),
       itemBuilder: (context, index) => EmojiButton(
         emoji: emojis[index].emoji,
